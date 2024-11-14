@@ -439,7 +439,8 @@ void Tutorial11::createAccelerationStructures()
 
     // The first bottom-level buffer is for the plane and the triangle
     const uint32_t vertexCount[] = { 3, 6 }; // Triangle has 3 vertices, plane has 6
-    bottomLevelBuffers[0] = createBottomLevelAS(mpDevice, mpCmdList, mpVertexBuffer, vertexCount, 2);
+    //bottomLevelBuffers[0] = createBottomLevelAS(mpDevice, mpCmdList, mpVertexBuffer, vertexCount, 2);
+    bottomLevelBuffers[0] = createBottomLevelAS(mpDevice, mpCmdList, mpVertexBuffer+1, vertexCount+1, 1);
     mpBottomLevelAS[0] = bottomLevelBuffers[0].pResult;
 
     // The second bottom-level buffer is for the triangle only
