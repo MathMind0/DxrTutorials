@@ -78,10 +78,12 @@ void miss(inout RayPayload payload)
 void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
     float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
-
+    payload.color = barycentrics;
+    /*
     const float3 A = float3(1, 0, 0);
     const float3 B = float3(0, 1, 0);
     const float3 C = float3(0, 0, 1);
 
     payload.color = A * barycentrics.x + B * barycentrics.y + C * barycentrics.z;
+    */
 }
