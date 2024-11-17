@@ -20,11 +20,11 @@
     <FxCompile Include="Data\13-Shaders.hlsl">
       <EntryPointName></EntryPointName>
       <ShaderType>Library</ShaderType>
-      <ShaderModel>6.1</ShaderModel>
+      <ShaderModel>6.3</ShaderModel>
       <EnableDebuggingInformation>true</EnableDebuggingInformation>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
-      <ObjectFileOutput>$(TargetDir)\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput>$(ProjectDir)\%(Filename).cso</ObjectFileOutput>
       <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DisableOptimizations>
       <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DisableOptimizations>
     </FxCompile>
