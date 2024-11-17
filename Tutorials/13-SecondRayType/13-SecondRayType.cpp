@@ -30,6 +30,7 @@
 
 static dxc::DxcDllSupport gDxcDllHelper;
 MAKE_SMART_COM_PTR(IDxcCompiler);
+MAKE_SMART_COM_PTR(IDxcCompiler2);
 MAKE_SMART_COM_PTR(IDxcLibrary);
 MAKE_SMART_COM_PTR(IDxcBlobEncoding);
 MAKE_SMART_COM_PTR(IDxcOperationResult);
@@ -467,10 +468,12 @@ ID3DBlobPtr compileLibrary(const WCHAR* filename, const WCHAR* targetString)
     // Initialize the helper
     d3d_call(gDxcDllHelper.Initialize());
     IDxcCompilerPtr pCompiler;
+    IDxcCompiler2Ptr pCompiler2;
     IDxcLibraryPtr pLibrary;
     d3d_call(gDxcDllHelper.CreateInstance(CLSID_DxcCompiler, &pCompiler));
     d3d_call(gDxcDllHelper.CreateInstance(CLSID_DxcLibrary, &pLibrary));
-
+    d3d_call(pCompiler->QueryInterface(IID_PPV_ARGS(&pCompiler2)));
+    
     // Open and read the file
     std::ifstream shaderFile(filename);
     if (shaderFile.good() == false)
@@ -488,8 +491,11 @@ ID3DBlobPtr compileLibrary(const WCHAR* filename, const WCHAR* targetString)
 
     // Compile
     IDxcOperationResultPtr pResult;
-    d3d_call(pCompiler->Compile(pTextBlob, filename, L"", targetString, nullptr, 0, nullptr, 0, nullptr, &pResult));
-
+    //d3d_call(pCompiler->Compile(pTextBlob, filename, L"", targetString, nullptr, 0, nullptr, 0, nullptr, &pResult));
+    d3d_call(pCompiler2->CompileWithDebug(pTextBlob, filename, L"", targetString,
+        nullptr, 0, nullptr, 0, nullptr,
+        &pResult, nullptr, nullptr));
+    
     // Verify the result
     HRESULT resultCode;
     d3d_call(pResult->GetStatus(&resultCode));
@@ -506,6 +512,27 @@ ID3DBlobPtr compileLibrary(const WCHAR* filename, const WCHAR* targetString)
     IDxcBlobPtr pBlob;
     d3d_call(pResult->GetResult(&pBlob));
     return pBlob;
+}
+
+std::vector<byte> loadLibrary(const WCHAR* filename)
+{
+    // Open and read the file
+    std::ifstream csoFile(filename);
+    if (csoFile.good() == false)
+    {
+        msgBox("Can't open file " + wstring_2_string(std::wstring(filename)));
+        throw std::exception();
+    }
+
+    csoFile.seekg(0, std::ios::end);
+    auto length = csoFile.tellg();
+    csoFile.seekg(0, std::ios::beg);
+
+    std::vector<byte> data(length);
+    csoFile.read(reinterpret_cast<char*>(data.data()), length);
+    csoFile.close();
+    
+    return data;
 }
 
 ID3D12RootSignaturePtr createRootSignature(ID3D12Device5Ptr pDevice, const D3D12_ROOT_SIGNATURE_DESC& desc)
@@ -627,11 +654,38 @@ struct DxilLibrary
         }
     };
 
+    DxilLibrary(std::vector<byte> csoDataIn, const WCHAR* entryPoint[], uint32_t entryPointCount)
+    : csoData(csoDataIn)
+    {
+        stateSubobject.Type = D3D12_STATE_SUBOBJECT_TYPE_DXIL_LIBRARY;
+        stateSubobject.pDesc = &dxilLibDesc;
+
+        dxilLibDesc = {};
+        exportDesc.resize(entryPointCount);
+        exportName.resize(entryPointCount);
+        if (!csoData.empty())
+        {
+            dxilLibDesc.DXILLibrary.pShaderBytecode = csoData.data();
+            dxilLibDesc.DXILLibrary.BytecodeLength = csoData.size();
+            dxilLibDesc.NumExports = entryPointCount;
+            dxilLibDesc.pExports = exportDesc.data();
+
+            for (uint32_t i = 0; i < entryPointCount; i++)
+            {
+                exportName[i] = entryPoint[i];
+                exportDesc[i].Name = exportName[i].c_str();
+                exportDesc[i].Flags = D3D12_EXPORT_FLAG_NONE;
+                exportDesc[i].ExportToRename = nullptr;
+            }
+        }
+    };
+
     DxilLibrary() : DxilLibrary(nullptr, nullptr, 0) {}
 
     D3D12_DXIL_LIBRARY_DESC dxilLibDesc = {};
     D3D12_STATE_SUBOBJECT stateSubobject{};
     ID3DBlobPtr pShaderBlob;
+    std::vector<byte> csoData;
     std::vector<D3D12_EXPORT_DESC> exportDesc;
     std::vector<std::wstring> exportName;
 };
@@ -649,9 +703,13 @@ static const WCHAR* kShadowHitGroup = L"ShadowHitGroup";
 DxilLibrary createDxilLibrary()
 {
     // Compile the shader
-    ID3DBlobPtr pDxilLib = compileLibrary(L"Data/13-Shaders.hlsl", L"lib_6_3");
+    //ID3DBlobPtr pDxilLib = compileLibrary(L"Data/13-Shaders.hlsl", L"lib_6_3");
+    std::vector<byte> csoData = loadLibrary(L"13-Shaders.cso");
+    
     const WCHAR* entryPoints[] = { kRayGenShader, kMissShader, kPlaneChs, kTriangleChs, kShadowMiss, kShadowChs };
-    return DxilLibrary(pDxilLib, entryPoints, arraysize(entryPoints));
+
+    //return DxilLibrary(pDxilLib, entryPoints, arraysize(entryPoints));
+    return DxilLibrary(std::move(csoData), entryPoints, arraysize(entryPoints));
 }
 
 struct HitProgram

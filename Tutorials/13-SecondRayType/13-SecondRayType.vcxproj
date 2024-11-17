@@ -18,8 +18,15 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Data\13-Shaders.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <EntryPointName></EntryPointName>
+      <ShaderType>Library</ShaderType>
+      <ShaderModel>6.1</ShaderModel>
+      <EnableDebuggingInformation>true</EnableDebuggingInformation>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
+      <ObjectFileOutput>$(TargetDir)\%(Filename).cso</ObjectFileOutput>
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DisableOptimizations>
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DisableOptimizations>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
