@@ -376,7 +376,7 @@ AccelerationStructureBuffers createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12Gr
 
     // Create the buffers
     AccelerationStructureBuffers buffers;
-    buffers.pScratch = createBuffer(pDevice, info.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, kDefaultHeapProps);
+    buffers.pScratch = createBuffer(pDevice, info.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COMMON, kDefaultHeapProps);
     buffers.pResult = createBuffer(pDevice, info.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, kDefaultHeapProps);
     tlasSize = info.ResultDataMaxSizeInBytes;
 
@@ -705,7 +705,7 @@ DxilLibrary createDxilLibrary()
 {
     // Compile the shader
     //ID3DBlobPtr pDxilLib = compileLibrary(L"Data/13-Shaders.hlsl", L"lib_6_3");
-    std::vector<byte> csoData = loadLibrary(L"13-Shaders.cso");
+    std::vector<byte> csoData = loadLibrary(L"13-Shaders.dxo");
     
     const WCHAR* entryPoints[] = { kRayGenShader, kMissShader, kPlaneChs, kTriangleChs, kShadowMiss, kShadowChs };
 

@@ -21,10 +21,12 @@
       <EntryPointName></EntryPointName>
       <ShaderType>Library</ShaderType>
       <ShaderModel>6.3</ShaderModel>
+      <AdditionalOptions>-export-shaders-only -Qstrip_debug -Qstrip_reflect</AdditionalOptions>
+      <AdditionalOptions>%(AdditionalOptions) -Fd $(ProjectDir)\%(Filename).pdb</AdditionalOptions>      
       <EnableDebuggingInformation>true</EnableDebuggingInformation>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
       <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
-      <ObjectFileOutput>$(ProjectDir)\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput>$(ProjectDir)\%(Filename).dxo</ObjectFileOutput>
       <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DisableOptimizations>
       <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DisableOptimizations>
     </FxCompile>
