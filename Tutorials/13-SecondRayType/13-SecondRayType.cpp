@@ -26,6 +26,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************/
 #include "13-SecondRayType.h"
+#include "CompiledShaders/13-Shaders.hlsl.h"
 #include <sstream>
 
 static dxc::DxcDllSupport gDxcDllHelper;
@@ -681,6 +682,29 @@ struct DxilLibrary
         }
     };
 
+    DxilLibrary(const WCHAR* entryPoint[], uint32_t entryPointCount)
+    {
+        stateSubobject.Type = D3D12_STATE_SUBOBJECT_TYPE_DXIL_LIBRARY;
+        stateSubobject.pDesc = &dxilLibDesc;
+
+        dxilLibDesc = {};
+        exportDesc.resize(entryPointCount);
+        exportName.resize(entryPointCount);
+
+        dxilLibDesc.DXILLibrary.pShaderBytecode = (void*)COMPILED_RT_SHADERS;
+        dxilLibDesc.DXILLibrary.BytecodeLength = arraysize(COMPILED_RT_SHADERS);
+        dxilLibDesc.NumExports = entryPointCount;
+        dxilLibDesc.pExports = exportDesc.data();
+
+        for (uint32_t i = 0; i < entryPointCount; i++)
+        {
+            exportName[i] = entryPoint[i];
+            exportDesc[i].Name = exportName[i].c_str();
+            exportDesc[i].Flags = D3D12_EXPORT_FLAG_NONE;
+            exportDesc[i].ExportToRename = nullptr;
+        }
+    };
+
     DxilLibrary() : DxilLibrary(nullptr, nullptr, 0) {}
 
     D3D12_DXIL_LIBRARY_DESC dxilLibDesc = {};
@@ -703,14 +727,17 @@ static const WCHAR* kShadowHitGroup = L"ShadowHitGroup";
 
 DxilLibrary createDxilLibrary()
 {
-    // Compile the shader
-    //ID3DBlobPtr pDxilLib = compileLibrary(L"Data/13-Shaders.hlsl", L"lib_6_3");
-    std::vector<byte> csoData = loadLibrary(L"13-Shaders.dxo");
-    
     const WCHAR* entryPoints[] = { kRayGenShader, kMissShader, kPlaneChs, kTriangleChs, kShadowMiss, kShadowChs };
-
+    
+    // Compile the shader
+    
+    //ID3DBlobPtr pDxilLib = compileLibrary(L"Data/13-Shaders.hlsl", L"lib_6_3"); 
     //return DxilLibrary(pDxilLib, entryPoints, arraysize(entryPoints));
-    return DxilLibrary(std::move(csoData), entryPoints, arraysize(entryPoints));
+
+    //std::vector<byte> csoData = loadLibrary(L"13-Shaders.dxo");
+    //return DxilLibrary(std::move(csoData), entryPoints, arraysize(entryPoints));
+
+    return DxilLibrary(entryPoints, arraysize(entryPoints));
 }
 
 struct HitProgram
