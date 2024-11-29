@@ -110,7 +110,7 @@ void planeChs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes
     ray.TMin = 0.01;
     ray.TMax = 100000;
     ShadowPayload shadowPayload;
-    TraceRay(gRtScene, 0  /*rayFlags*/, 0xFF, 1 /* ray index*/, 0, 1, ray, shadowPayload);
+    TraceRay(gRtScene, 0  /*rayFlags*/, 0xFF, 1 /* ray index*/, 2, 1, ray, shadowPayload);
 
     float factor = shadowPayload.hit ? 0.1 : 1.0;
     payload.color = float3(0.9f, 0.9f, 0.9f) * factor;
